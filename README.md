@@ -1,4 +1,4 @@
-# ⚡ Premium Gauge - Tableau Extension
+# ⚡Tableau Premium Gauge - Tableau Extension
 
 Extensión de Tableau para visualizar KPIs con un gauge premium totalmente personalizable.
 
