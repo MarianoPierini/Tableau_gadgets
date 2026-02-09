@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest manifest-version="0.1" xmlns="http://www.tableau.com/xml/extension_manifest">
+  <dashboard-extension id="com.aero.premium-gauge" extension-version="2.0.0">
+    <default-locale>en_US</default-locale>
+    <name resource-id="name"/>
+    <description>Premium Gauge - Visualización de KPIs con estilo</description>
+    <author name="Aero Data Team" email="data@aero.com" organization="Aero SRL" website="https://aero.com"/>
+    <min-api-version>1.0</min-api-version>
+    <source-location>
+      <url>TU_URL_DE_RENDER_AQUI</url>
+    </source-location>
+    <icon>iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEwAACxMBAJqcGAAAAlhJREFUOI2Nkt9vy1EYh5/3bbsvRSySCZbIxI+ZCKsN2TKZMJFIZIGEuBiJECRuuZMQFyRc+BusJBKCWkIQIYgfFjYhiLHZGJPJJlbRLdra2vp2H5sLLb/mdC7Oed7zvue8h9TRt1lA00AAsCDxvqA8V8qy7jRZ6k50YsiWAGLmzswSI/NW1TZ5fVLuVkfHndy7Bg+AkFmKnCAMnyNAaL0gXVqu4fWnv8uh1K/qRWn3SgdY0OTkFunPwqJu5n1JtNnZ8E8GSKoHsrmPBBEDL7e1WHcZAZLwO0n4g7RjpWONlFVnqt+KttKX+8SBEjRXFdKrKOxLgpKA9gYDRU8XC9mHsqCamqBIVu/lYvG7n0v6YFCmJBLWd9pzmfLU+mJWRF0BVvqRR+rIy3vb6q4kpFSIft9CiI5B9u0ikM5e6sAVY8K2UtWnKGfmBLGrQgiUt6ggJjHqURR2NJSUMvT/4V/UgLqPgK5CTjUPSPn3Zxp9Ai//Ek9lDJQLM5qUOVL+mxNGSkPy8D1h2g+PXHZXP/dDu4GvAMpqBmPv7ZG1hXvEYNAl+g2h5tBFnIr/k4Cv+MJvT2P75h4k/Rvc+xN+C0u10QBTdFYW3m9/mCQNl8TvLcWkMdUwfaL03rBj+N3X4QTJdvuB5XAGVfpjVNGZL/fJo7nKXlWNwLRsFslZmWMVlDmkN/jEzB//5BfMYT/bPqYCSG+j/0lB1D5iI6+D0n8FKSJ79AAAAABJRU5ErkJggg==</icon>
+    <permissions>
+      <permission>full data</permission>
+    </permissions>
+    <context-menu>
+      <configure-context-menu-item/>
+    </context-menu>
+  </dashboard-extension>
+  <resources>
+    <resource id="name">
+      <text locale="en_US">Premium Gauge</text>
+    </resource>
+  </resources>
+</manifest>

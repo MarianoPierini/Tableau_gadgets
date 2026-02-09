@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configurar Gauge</title>
+  <script src="https://tableau.github.io/extensions-api/lib/tableau.extensions.1.latest.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f1a;
+      color: #ffffff;
+      padding: 24px;
+      min-height: 100vh;
+      overflow-y: auto;
+    }
+
+    h1 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: #f4d03f;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 24px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .section:last-of-type {
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .section-title::before {
+      content: '';
+      width: 12px;
+      height: 2px;
+      background: #f4d03f;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 10px;
+      color: #ffffff;
+      font-size: 14px;
+      margin-bottom: 16px;
+      transition: all 0.2s;
+    }
+
+    select:focus, input:focus {
+      outline: none;
+      border-color: #f4d03f;
+      background: rgba(255,255,255,0.08);
+    }
+
+    select option {
+      background: #1a1a2e;
+      color: #ffffff;
+    }
+
+    /* Color presets */
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .preset-option {
+      padding: 12px 8px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .preset-option:hover {
+      border-color: rgba(255,255,255,0.25);
+      transform: translateY(-2px);
+    }
+
+    .preset-option.selected {
+      border-color: #f4d03f;
+      background: rgba(244,208,63,0.08);
+    }
+
+    .preset-preview {
+      display: flex;
+      justify-content: center;
+      gap: 3px;
+      margin-bottom: 8px;
+    }
+
+    .preset-preview span {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+    }
+
+    .preset-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.6);
+    }
+
+    /* Theme options */
+    .theme-options {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .theme-option {
+      flex: 1;
+      padding: 14px;
+      border: 2px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+    }
+
+    .theme-option:hover {
+      border-color: rgba(255,255,255,0.25);
+    }
+
+    .theme-option.selected {
+      border-color: #f4d03f;
+      background: rgba(244,208,63,0.08);
+    }
+
+    .theme-preview {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      margin: 0 auto 10px;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .theme-preview.dark { background: #0a0a0f; }
+    .theme-preview.light { background: #f8f9fa; }
+    .theme-preview.transparent { 
+      background: linear-gradient(45deg, #ccc 25%, transparent 25%),
+                  linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                  linear-gradient(45deg, transparent 75%, #ccc 75%),
+                  linear-gradient(-45deg, transparent 75%, #ccc 75%);
+      background-size: 8px 8px;
+      background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+    }
+
+    .theme-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    /* Custom colors */
+    .color-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .color-input-wrapper {
+      position: relative;
+      flex: 1;
+    }
+
+    input[type="color"] {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      padding: 0;
+      background: none;
+    }
+
+    input[type="color"]::-webkit-color-swatch-wrapper {
+      padding: 0;
+    }
+
+    input[type="color"]::-webkit-color-swatch {
+      border: 2px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+    }
+
+    .color-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      min-width: 60px;
+    }
+
+    .color-hex {
+      flex: 1;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 13px;
+      font-family: monospace;
+    }
+
+    /* Zone ranges */
+    .zone-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 12px;
+      background: rgba(255,255,255,0.03);
+      border-radius: 10px;
+    }
+
+    .zone-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .zone-indicator.red { background: #f72585; }
+    .zone-indicator.yellow { background: #f4d03f; }
+    .zone-indicator.green { background: #00f5d4; }
+
+    .zone-row input[type="number"] {
+      width: 70px;
+      margin-bottom: 0;
+      padding: 8px 10px;
+      text-align: center;
+    }
+
+    .zone-row input[type="text"] {
+      flex: 1;
+      margin-bottom: 0;
+      padding: 8px 10px;
+    }
+
+    .zone-row span {
+      color: rgba(255,255,255,0.4);
+      font-size: 12px;
+    }
+
+    /* Buttons */
+    .buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    button {
+      flex: 1;
+      padding: 14px 24px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-primary {
+      background: #f4d03f;
+      color: #0f0f1a;
+    }
+
+    .btn-primary:hover {
+      background: #f1c40f;
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.08);
+      color: #ffffff;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.12);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    .toggle-section {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .toggle-section .arrow {
+      transition: transform 0.2s;
+    }
+
+    .toggle-section.collapsed .arrow {
+      transform: rotate(-90deg);
+    }
+
+    .collapsible {
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .collapsible.collapsed {
+      max-height: 0 !important;
+    }
+
+    .help-text {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      margin-top: -8px;
+      margin-bottom: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading" class="loading">Cargando configuración...</div>
+  
+  <div id="config" style="display: none;">
+    <h1>⚡ Configuración del Gauge</h1>
+    <p class="subtitle">Conectá tus datos y personalizá el estilo</p>
+
+    <!-- DATA SOURCE -->
+    <div class="section">
+      <div class="section-title">Fuente de Datos</div>
+      
+      <label>Hoja del Dashboard</label>
+      <select id="worksheetSelect">
+        <option value="">Seleccionar hoja...</option>
+      </select>
+
+      <label>Campo / Medida</label>
+      <select id="fieldSelect">
+        <option value="">Seleccionar campo...</option>
+      </select>
+      <p class="help-text">El gauge mostrará el valor de este campo</p>
+    </div>
+
+    <!-- APPEARANCE -->
+    <div class="section">
+      <div class="section-title">Tema Base</div>
+      
+      <div class="theme-options" id="themeOptions">
+        <div class="theme-option" data-value="dark">
+          <div class="theme-preview dark"></div>
+          <div class="theme-label">Oscuro</div>
+        </div>
+        <div class="theme-option" data-value="light">
+          <div class="theme-preview light"></div>
+          <div class="theme-label">Claro</div>
+        </div>
+        <div class="theme-option" data-value="transparent">
+          <div class="theme-preview transparent"></div>
+          <div class="theme-label">Transparente</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COLOR PRESETS -->
+    <div class="section">
+      <div class="section-title">Paleta de Colores</div>
+      
+      <div class="preset-grid" id="presetGrid">
+        <div class="preset-option" data-value="default">
+          <div class="preset-preview">
+            <span style="background: #f72585"></span>
+            <span style="background: #f4d03f"></span>
+            <span style="background: #00f5d4"></span>
+          </div>
+          <div class="preset-label">Default</div>
+        </div>
+        <div class="preset-option" data-value="midnight">
+          <div class="preset-preview">
+            <span style="background: #ff006e"></span>
+            <span style="background: #8338ec"></span>
+            <span style="background: #3a86ff"></span>
+          </div>
+          <div class="preset-label">Midnight</div>
+        </div>
+        <div class="preset-option" data-value="forest">
+          <div class="preset-preview">
+            <span style="background: #d62828"></span>
+            <span style="background: #f77f00"></span>
+            <span style="background: #2a9d8f"></span>
+          </div>
+          <div class="preset-label">Forest</div>
+        </div>
+        <div class="preset-option" data-value="ocean">
+          <div class="preset-preview">
+            <span style="background: #e63946"></span>
+            <span style="background: #f4a261"></span>
+            <span style="background: #2ec4b6"></span>
+          </div>
+          <div class="preset-label">Ocean</div>
+        </div>
+        <div class="preset-option" data-value="sunset">
+          <div class="preset-preview">
+            <span style="background: #9d0208"></span>
+            <span style="background: #f48c06"></span>
+            <span style="background: #ffba08"></span>
+          </div>
+          <div class="preset-label">Sunset</div>
+        </div>
+        <div class="preset-option" data-value="corporate">
+          <div class="preset-preview">
+            <span style="background: #dc3545"></span>
+            <span style="background: #ffc107"></span>
+            <span style="background: #28a745"></span>
+          </div>
+          <div class="preset-label">Corporate</div>
+        </div>
+        <div class="preset-option" data-value="minimal">
+          <div class="preset-preview">
+            <span style="background: #e74c3c"></span>
+            <span style="background: #f39c12"></span>
+            <span style="background: #27ae60"></span>
+          </div>
+          <div class="preset-label">Minimal</div>
+        </div>
+        <div class="preset-option" data-value="custom">
+          <div class="preset-preview">
+            <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></span>
+            <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></span>
+            <span style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)"></span>
+          </div>
+          <div class="preset-label">Custom</div>
+        </div>
+      </div>
+
+      <!-- Custom colors (shown when "custom" is selected) -->
+      <div id="customColors" style="display: none;">
+        <div class="color-row">
+          <span class="color-label">Zona 1</span>
+          <input type="color" id="colorZone1" value="#f72585">
+          <input type="text" class="color-hex" id="hexZone1" value="#f72585">
+        </div>
+        <div class="color-row">
+          <span class="color-label">Zona 2</span>
+          <input type="color" id="colorZone2" value="#f4d03f">
+          <input type="text" class="color-hex" id="hexZone2" value="#f4d03f">
+        </div>
+        <div class="color-row">
+          <span class="color-label">Zona 3</span>
+          <input type="color" id="colorZone3" value="#00f5d4">
+          <input type="text" class="color-hex" id="hexZone3" value="#00f5d4">
+        </div>
+      </div>
+    </div>
+
+    <!-- TEXT -->
+    <div class="section">
+      <div class="section-title">Texto</div>
+      
+      <label>Título</label>
+      <input type="text" id="titleInput" placeholder="Ej: Cumplimiento Q1">
+
+      <label>Unidad</label>
+      <input type="text" id="unitInput" placeholder="Ej: %, USD, unidades">
+    </div>
+
+    <!-- RANGES -->
+    <div class="section">
+      <div class="section-title">Rangos y Zonas</div>
+      
+      <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+        <div style="flex: 1;">
+          <label>Mínimo</label>
+          <input type="number" id="minValue" value="0">
+        </div>
+        <div style="flex: 1;">
+          <label>Máximo</label>
+          <input type="number" id="maxValue" value="100">
+        </div>
+      </div>
+
+      <label>Configurar zonas</label>
+      
+      <div class="zone-row">
+        <div class="zone-indicator red"></div>
+        <span>0</span>
+        <span>a</span>
+        <input type="number" id="zoneRed" value="30">
+        <input type="text" id="labelZone1" value="Crítico" placeholder="Etiqueta">
+      </div>
+
+      <div class="zone-row">
+        <div class="zone-indicator yellow"></div>
+        <span>hasta</span>
+        <input type="number" id="zoneYellow" value="70">
+        <input type="text" id="labelZone2" value="Moderado" placeholder="Etiqueta">
+      </div>
+
+      <div class="zone-row">
+        <div class="zone-indicator green"></div>
+        <span>hasta</span>
+        <input type="number" id="zoneGreen" value="100" disabled>
+        <input type="text" id="labelZone3" value="Excelente" placeholder="Etiqueta">
+      </div>
+    </div>
+
+    <div class="buttons">
+      <button class="btn-secondary" id="cancelBtn">Cancelar</button>
+      <button class="btn-primary" id="saveBtn">💾 Guardar</button>
+    </div>
+  </div>
+
+  <script>
+    var worksheets = [];
+    var selectedTheme = 'dark';
+    var selectedPreset = 'default';
+
+    // Initialize
+    tableau.extensions.initializeDialogAsync().then(function() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('config').style.display = 'block';
+      
+      loadWorksheets();
+      loadSettings();
+      setupEventListeners();
+    });
+
+    function loadWorksheets() {
+      var dashboard = tableau.extensions.dashboardContent.dashboard;
+      worksheets = dashboard.worksheets;
+      
+      var select = document.getElementById('worksheetSelect');
+      worksheets.forEach(function(ws, index) {
+        var option = document.createElement('option');
+        option.value = index;
+        option.textContent = ws.name;
+        select.appendChild(option);
+      });
+    }
+
+    function loadFields(worksheetIndex) {
+      var worksheet = worksheets[worksheetIndex];
+      var fieldSelect = document.getElementById('fieldSelect');
+      fieldSelect.innerHTML = '<option value="">Seleccionar campo...</option>';
+      
+      worksheet.getSummaryDataAsync().then(function(dataTable) {
+        dataTable.columns.forEach(function(col) {
+          if (col.dataType === 'float' || col.dataType === 'int') {
+            var option = document.createElement('option');
+            option.value = col.fieldName;
+            option.textContent = col.fieldName.replace(/^SUM\(|\)$/g, '').replace(/^AVG\(|\)$/g, '');
+            fieldSelect.appendChild(option);
+          }
+        });
+      });
+    }
+
+    function loadSettings() {
+      var settings = tableau.extensions.settings.getAll();
+      
+      if (settings.worksheet) {
+        document.getElementById('worksheetSelect').value = settings.worksheet;
+        loadFields(parseInt(settings.worksheet));
+        
+        if (settings.field) {
+          setTimeout(function() {
+            document.getElementById('fieldSelect').value = settings.field;
+          }, 500);
+        }
+      }
+      
+      if (settings.theme) {
+        selectTheme(settings.theme);
+      }
+      
+      if (settings.preset) {
+        selectPreset(settings.preset);
+      }
+      
+      if (settings.colorZone1) {
+        document.getElementById('colorZone1').value = settings.colorZone1;
+        document.getElementById('hexZone1').value = settings.colorZone1;
+        document.getElementById('colorZone2').value = settings.colorZone2;
+        document.getElementById('hexZone2').value = settings.colorZone2;
+        document.getElementById('colorZone3').value = settings.colorZone3;
+        document.getElementById('hexZone3').value = settings.colorZone3;
+      }
+      
+      if (settings.title) document.getElementById('titleInput').value = settings.title;
+      if (settings.unit) document.getElementById('unitInput').value = settings.unit;
+      if (settings.minValue) document.getElementById('minValue').value = settings.minValue;
+      if (settings.maxValue) {
+        document.getElementById('maxValue').value = settings.maxValue;
+        document.getElementById('zoneGreen').value = settings.maxValue;
+      }
+      if (settings.zoneRed) document.getElementById('zoneRed').value = settings.zoneRed;
+      if (settings.zoneYellow) document.getElementById('zoneYellow').value = settings.zoneYellow;
+      if (settings.labelZone1) document.getElementById('labelZone1').value = settings.labelZone1;
+      if (settings.labelZone2) document.getElementById('labelZone2').value = settings.labelZone2;
+      if (settings.labelZone3) document.getElementById('labelZone3').value = settings.labelZone3;
+    }
+
+    function selectTheme(value) {
+      selectedTheme = value;
+      document.querySelectorAll('.theme-option').forEach(function(el) {
+        el.classList.remove('selected');
+        if (el.dataset.value === value) {
+          el.classList.add('selected');
+        }
+      });
+    }
+
+    function selectPreset(value) {
+      selectedPreset = value;
+      document.querySelectorAll('.preset-option').forEach(function(el) {
+        el.classList.remove('selected');
+        if (el.dataset.value === value) {
+          el.classList.add('selected');
+        }
+      });
+      
+      // Show/hide custom colors
+      document.getElementById('customColors').style.display = value === 'custom' ? 'block' : 'none';
+    }
+
+    function setupEventListeners() {
+      // Worksheet change
+      document.getElementById('worksheetSelect').addEventListener('change', function(e) {
+        if (e.target.value) {
+          loadFields(parseInt(e.target.value));
+        }
+      });
+
+      // Theme options
+      document.querySelectorAll('.theme-option').forEach(function(el) {
+        el.addEventListener('click', function() {
+          selectTheme(this.dataset.value);
+        });
+      });
+
+      // Preset options
+      document.querySelectorAll('.preset-option').forEach(function(el) {
+        el.addEventListener('click', function() {
+          selectPreset(this.dataset.value);
+        });
+      });
+
+      // Color pickers sync with hex inputs
+      ['Zone1', 'Zone2', 'Zone3'].forEach(function(zone) {
+        var colorInput = document.getElementById('color' + zone);
+        var hexInput = document.getElementById('hex' + zone);
+        
+        colorInput.addEventListener('input', function() {
+          hexInput.value = this.value;
+        });
+        
+        hexInput.addEventListener('input', function() {
+          if (/^#[0-9A-Fa-f]{6}$/.test(this.value)) {
+            colorInput.value = this.value;
+          }
+        });
+      });
+
+      // Max value sync with zone green
+      document.getElementById('maxValue').addEventListener('change', function(e) {
+        document.getElementById('zoneGreen').value = e.target.value;
+      });
+
+      // Cancel
+      document.getElementById('cancelBtn').addEventListener('click', function() {
+        tableau.extensions.ui.closeDialog('cancel');
+      });
+
+      // Save
+      document.getElementById('saveBtn').addEventListener('click', saveSettings);
+    }
+
+    function saveSettings() {
+      var settings = tableau.extensions.settings;
+      
+      // Data source
+      settings.set('worksheet', document.getElementById('worksheetSelect').value);
+      settings.set('field', document.getElementById('fieldSelect').value);
+      
+      // Theme & Preset
+      settings.set('theme', selectedTheme);
+      settings.set('preset', selectedPreset);
+      
+      // Custom colors
+      if (selectedPreset === 'custom') {
+        settings.set('colorZone1', document.getElementById('colorZone1').value);
+        settings.set('colorZone2', document.getElementById('colorZone2').value);
+        settings.set('colorZone3', document.getElementById('colorZone3').value);
+      }
+      
+      // Text
+      settings.set('title', document.getElementById('titleInput').value);
+      settings.set('unit', document.getElementById('unitInput').value);
+      
+      // Ranges
+      settings.set('minValue', document.getElementById('minValue').value);
+      settings.set('maxValue', document.getElementById('maxValue').value);
+      settings.set('zoneRed', document.getElementById('zoneRed').value);
+      settings.set('zoneYellow', document.getElementById('zoneYellow').value);
+      
+      // Zone labels
+      settings.set('labelZone1', document.getElementById('labelZone1').value);
+      settings.set('labelZone2', document.getElementById('labelZone2').value);
+      settings.set('labelZone3', document.getElementById('labelZone3').value);
+      
+      settings.saveAsync().then(function() {
+        tableau.extensions.ui.closeDialog('saved');
+      });
+    }
+  </script>
+</body>
+</html>
