@@ -751,7 +751,7 @@
     }
 
     function openConfigure() {
-      var configUrl = window.location.origin + '/configure';
+      var configUrl = window.location.origin + '/configure' + window.location.search;
       tableau.extensions.ui.displayDialogAsync(configUrl, '', { width: 450, height: 700 }).then(function(result) {
         if (result === 'saved') {
           loadSettings();
