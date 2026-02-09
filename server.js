@@ -4,17 +4,14 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Servir archivos estáticos
-app.use(express.static('public'));
+app.use(express.static(__dirname));
 
-// Ruta principal
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Ruta de configuración
 app.get('/configure', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'configure.html'));
+  res.sendFile(path.join(__dirname, 'configure.html'));
 });
 
 app.listen(PORT, () => {
