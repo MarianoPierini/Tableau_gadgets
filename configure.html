@@ -549,14 +549,16 @@
     var selectedPreset = 'default';
 
     // Initialize
-    tableau.extensions.initializeDialogAsync().then(function() {
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('config').style.display = 'block';
-      
-      loadWorksheets();
-      loadSettings();
-      setupEventListeners();
-    });
+tableau.extensions.initializeDialogAsync().then(function() {
+  document.getElementById('loading').style.display = 'none';
+  document.getElementById('config').style.display = 'block';
+  
+  loadWorksheets();
+  loadSettings();
+  setupEventListeners();
+}).catch(function(err) {
+  document.getElementById('loading').textContent = 'Error: ' + err.message;
+});
 
     function loadWorksheets() {
       var dashboard = tableau.extensions.dashboardContent.dashboard;
