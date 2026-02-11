@@ -750,15 +750,20 @@
       document.documentElement.style.setProperty('--gauge-zone-3', zone3);
     }
 
-    function openConfigure() {
-      var configUrl = window.location.origin + '/configure' + window.location.search;
-      tableau.extensions.ui.displayDialogAsync(configUrl, '', { width: 450, height: 700 }).then(function(result) {
-        if (result === 'saved') {
-          loadSettings();
-          loadData();
-        }
-      });
+function openConfigure() {
+  var configUrl = window.location.origin + '/configure' + window.location.search;
+  alert('Abriendo: ' + configUrl);
+  
+  tableau.extensions.ui.displayDialogAsync(configUrl, '', { width: 450, height: 700 }).then(function(result) {
+    alert('Resultado: ' + result);
+    if (result === 'saved') {
+      loadSettings();
+      loadData();
     }
+  }).catch(function(err) {
+    alert('Error: ' + err.message);
+  });
+}
 
     function loadSettings() {
       var settings = tableau.extensions.settings.getAll();
