@@ -470,6 +470,8 @@
     <div class="loading-spinner"></div>
   </div>
 
+  <div id="debugInfo" style="position:fixed;top:5px;left:5px;background:rgba(0,0,0,0.8);color:#0f0;font-family:monospace;font-size:10px;padding:8px;border-radius:4px;max-width:300px;z-index:9999;"></div>
+
   <div class="setup-prompt" id="setupPrompt">
     <h2>⚡ Premium Gauge</h2>
     <p>Configurá la fuente de datos y el estilo visual</p>
@@ -751,17 +753,17 @@
     }
 
 function openConfigure() {
-  var configUrl = window.location.origin + '/configure' + window.location.search;
-  alert('Abriendo: ' + configUrl);
+  var configUrl = window.location.origin + '/configure';
+  console.log('Abriendo configuración:', configUrl);
   
   tableau.extensions.ui.displayDialogAsync(configUrl, '', { width: 450, height: 700 }).then(function(result) {
-    alert('Resultado: ' + result);
+    console.log('Configuración cerrada con:', result);
     if (result === 'saved') {
       loadSettings();
       loadData();
     }
   }).catch(function(err) {
-    alert('Error: ' + err.message);
+    console.error('Error abriendo configuración:', err);
   });
 }
 
@@ -826,61 +828,93 @@ function openConfigure() {
     }
 
 function loadData() {
+  debug('loadData ejecutado');
+  
   var dashboard = tableau.extensions.dashboardContent.dashboard;
+  debug('Worksheets: ' + dashboard.worksheets.length);
   
   if (dashboard.worksheets.length === 0) {
-    console.log('No hay hojas en el dashboard');
+    debug('No hay hojas');
+    document.getElementById('setupPrompt').classList.remove('hidden');
+    document.getElementById('gaugeContainer').style.display = 'none';
     return;
   }
   
-  // Tomar la primera hoja automáticamente
   var worksheet = dashboard.worksheets[0];
-  console.log('Leyendo hoja: ' + worksheet.name);
+  debug('Hoja: ' + worksheet.name);
   
   document.getElementById('setupPrompt').classList.add('hidden');
   document.getElementById('gaugeContainer').style.display = 'flex';
   
   worksheet.getSummaryDataAsync().then(function(dataTable) {
-    console.log('Filas: ' + dataTable.data.length);
-    console.log('Columnas: ' + dataTable.columns.length);
+    debug('Filas: ' + dataTable.data.length + ', Cols: ' + dataTable.columns.length);
     
     if (dataTable.data.length > 0) {
-      // Buscar primer campo numérico
       for (var i = 0; i < dataTable.columns.length; i++) {
         var col = dataTable.columns[i];
-        console.log('Columna ' + i + ': ' + col.fieldName + ' (' + col.dataType + ')');
+        debug('Col ' + i + ': ' + col.fieldName + ' (' + col.dataType + ')');
         
         if (col.dataType === 'float' || col.dataType === 'int') {
           var value = dataTable.data[0][col.index].value;
-          console.log('Valor encontrado: ' + value);
+          debug('Valor: ' + value);
+          
+          if (value > 0 && value <= 1) {
+            value = value * 100;
+            debug('Convertido: ' + value);
+          }
+          
           updateGauge(value);
           return;
         }
       }
+      debug('No hay campo numerico');
+    } else {
+      debug('Sin datos');
     }
+  }).catch(function(err) {
+    debug('ERROR datos: ' + err.message);
   });
 }
+
+    function debug(msg) {
+      var el = document.getElementById('debugInfo');
+      el.innerHTML += msg + '<br>';
+      console.log(msg);
+    }
 
     function init() {
       initArcs();
       generateTicks();
       
+      debug('Init ejecutado');
+      debug('Tableau: ' + (typeof tableau !== 'undefined'));
+      debug('Extensions: ' + (typeof tableau !== 'undefined' && tableau.extensions ? 'OK' : 'NO'));
+      
       if (typeof tableau !== 'undefined' && tableau.extensions) {
+        debug('Inicializando Tableau...');
+        
         tableau.extensions.initializeAsync({ configure: openConfigure }).then(function() {
+          debug('Tableau conectado OK');
+          
+          var dashboard = tableau.extensions.dashboardContent.dashboard;
+          debug('Dashboard: ' + dashboard.name);
+          debug('Hojas: ' + dashboard.worksheets.length);
+          
           loadSettings();
           loadData();
           
-          // Escuchar cambios en filtros y selección
-          var dashboard = tableau.extensions.dashboardContent.dashboard;
           dashboard.worksheets.forEach(function(worksheet) {
             worksheet.addEventListener(tableau.TableauEventType.FilterChanged, loadData);
             worksheet.addEventListener(tableau.TableauEventType.MarkSelectionChanged, loadData);
           });
           
           document.getElementById('loadingOverlay').classList.add('hidden');
+        }).catch(function(err) {
+          debug('ERROR: ' + err.message);
+          document.getElementById('loadingOverlay').innerHTML = '<div style="color:red;padding:20px;text-align:center;">Error: ' + err.message + '</div>';
         });
       } else {
-        // Standalone mode
+        debug('Modo standalone');
         document.getElementById('loadingOverlay').classList.add('hidden');
         document.getElementById('setupPrompt').classList.add('hidden');
         document.getElementById('gaugeContainer').style.display = 'flex';
