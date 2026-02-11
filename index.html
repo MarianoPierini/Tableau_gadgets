@@ -825,42 +825,41 @@ function openConfigure() {
       generateTicks();
     }
 
-    function loadData() {
-      if (config.worksheetIndex === null) {
-        document.getElementById('setupPrompt').classList.remove('hidden');
-        document.getElementById('gaugeContainer').style.display = 'none';
-        return;
-      }
-      
-      document.getElementById('setupPrompt').classList.add('hidden');
-      document.getElementById('gaugeContainer').style.display = 'flex';
-      
-      var dashboard = tableau.extensions.dashboardContent.dashboard;
-      var worksheet = dashboard.worksheets[config.worksheetIndex];
-      
-      if (!worksheet) return;
-      
-      worksheet.getSummaryDataAsync().then(function(dataTable) {
-        if (dataTable.data.length > 0) {
-          var value = null;
-          
-          for (var i = 0; i < dataTable.columns.length; i++) {
-            var col = dataTable.columns[i];
-            if (config.fieldName && col.fieldName === config.fieldName) {
-              value = dataTable.data[0][col.index].value;
-              break;
-            } else if (!config.fieldName && (col.dataType === 'float' || col.dataType === 'int')) {
-              value = dataTable.data[0][col.index].value;
-              break;
-            }
-          }
-          
-          if (value !== null) {
-            updateGauge(value);
-          }
+function loadData() {
+  var dashboard = tableau.extensions.dashboardContent.dashboard;
+  
+  if (dashboard.worksheets.length === 0) {
+    console.log('No hay hojas en el dashboard');
+    return;
+  }
+  
+  // Tomar la primera hoja automáticamente
+  var worksheet = dashboard.worksheets[0];
+  console.log('Leyendo hoja: ' + worksheet.name);
+  
+  document.getElementById('setupPrompt').classList.add('hidden');
+  document.getElementById('gaugeContainer').style.display = 'flex';
+  
+  worksheet.getSummaryDataAsync().then(function(dataTable) {
+    console.log('Filas: ' + dataTable.data.length);
+    console.log('Columnas: ' + dataTable.columns.length);
+    
+    if (dataTable.data.length > 0) {
+      // Buscar primer campo numérico
+      for (var i = 0; i < dataTable.columns.length; i++) {
+        var col = dataTable.columns[i];
+        console.log('Columna ' + i + ': ' + col.fieldName + ' (' + col.dataType + ')');
+        
+        if (col.dataType === 'float' || col.dataType === 'int') {
+          var value = dataTable.data[0][col.index].value;
+          console.log('Valor encontrado: ' + value);
+          updateGauge(value);
+          return;
         }
-      });
+      }
     }
+  });
+}
 
     function init() {
       initArcs();
