@@ -18,7 +18,7 @@ app.get('/', checkToken, (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('/configure', checkToken, (req, res) => {
+app.get('/configure', (req, res) => {
   res.sendFile(path.join(__dirname, 'configure.html'));
 });
 
